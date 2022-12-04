@@ -5,11 +5,10 @@ with PyPlink("data") as bed:
     bim = bed.get_bim()
     fam = bed.get_fam()
 
-    # Getting the genotypes of a single marker (numpy.ndarray):   # genotypes = bed.get_geno_marker("rs12345")
+    ## Getting the genotypes of a single marker (numpy.ndarray):   # genotypes = bed.get_geno_marker("rs12345")
     
     # print(bed.get_nb_samples())
     # print(bed.get_nb_markers())
-    # samples = bed.get_fam()
     # print(samples.head())
 
     samples = bed.get_fam()

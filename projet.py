@@ -1,4 +1,6 @@
 from pyplink import PyPlink
+import statsmodels.api as sm
+import numpy as np
 
 
 with PyPlink("data") as bed:
@@ -30,3 +32,12 @@ with PyPlink("data") as bed:
     for marker_id, genotypes in bed:
         print(marker_id)
         print(genotypes)
+        print(samples.row["status"])
+
+	# Régression logistique
+    for marker_id, genotypes in bed:
+        endog = np.array(samples['status'])     # Problème : plus de 2 collones
+        exog = sm.add_constant(np.array(genotypes))
+    
+        regression = sm.GLM(endog, exog, family=sm.families.Binomial())
+        regression = regression.fit()   # Problème : l'objet n'est pas un fit

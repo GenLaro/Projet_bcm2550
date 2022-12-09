@@ -1,43 +1,35 @@
 from pyplink import PyPlink
 import statsmodels.api as sm
 import numpy as np
+import csv
 
 
 with PyPlink("data") as bed:
-    bim = bed.get_bim()
-    fam = bed.get_fam()
+    with open('results.csv', 'w') as csv_file:
 
-    ## Getting the genotypes of a single marker (numpy.ndarray):   # genotypes = bed.get_geno_marker("rs12345")
-    
-    # print(bed.get_nb_samples())
-    # print(bed.get_nb_markers())
-    # print(samples.head())
+        writer = csv.writer(csv_file, lineterminator = '\n')
+        writer.writerow(["snp", "reference_allele", "effect_allele", "beta", "odds_ratio", "p"])
 
-    samples = bed.get_fam()
-    markers = bed.get_bim()
-    #print(markers.head())
-    
+        bim = bed.get_bim()
+        fam = bed.get_fam()
 
-    ##changement des statuts
-    for index, row in samples.iterrows():
-        if row["status"] == 1 :
-            samples.loc[index, "status"] = 0
-        if row["status"] == 2 :
-            samples.loc[index, "status"] = 1
-    # print(samples.head())
+        samples = bed.get_fam()
+        markers = bed.get_bim()
 
-    # print(samples.loc[1013,'status'])
+        ##changement des statuts
+        samples.loc[:, "status"] = samples.status - 1
 
-    ## lecture des genotypes de chaque echantillon pour chaque marqueur
-    for marker_id, genotypes in bed:
-        print(marker_id)
-        print(genotypes)
-        print(samples.row["status"])
+        # Régression logistique et ecriture csv
+        for marker_id, genotypes in bed:
+            endog = np.array(samples['status'])     # Problème : plus de 2 collones
+            exog = sm.add_constant(np.array(genotypes))
 
-	# Régression logistique
-    for marker_id, genotypes in bed:
-        endog = np.array(samples['status'])     # Problème : plus de 2 collones
-        exog = sm.add_constant(np.array(genotypes))
-    
-        regression = sm.GLM(endog, exog, family=sm.families.Binomial())
-        regression = regression.fit()   # Problème : l'objet n'est pas un fit
+            model = sm.GLM(endog, exog, family=sm.families.Binomial())
+            regression = model.fit()   # Problème : l'objet n'est pas un fit
+
+            beta = regression.params[1]
+            p = regression.pvalues[1]
+            allele_1 =  bim.loc[marker_id]['a1']
+            allele_2 =  bim.loc[marker_id]['a2']
+
+            writer.writerow([marker_id, allele_2, allele_1, beta, np.exp(beta), p])

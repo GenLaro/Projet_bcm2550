@@ -29,7 +29,7 @@ with PyPlink("data") as bed:
 
             beta = regression.params[1]
             p = regression.pvalues[1]
-            allele_1 =  bim.loc[marker_id]['a1']
-            allele_2 =  bim.loc[marker_id]['a2']
+            effect_allele =  bim.loc[marker_id]['a1']
+            reference_allele =  bim.loc[marker_id]['a2']
 
-            writer.writerow([marker_id, allele_2, allele_1, beta, np.exp(beta), p])
+            writer.writerow([marker_id, reference_allele, effect_allele, beta, np.exp(beta), p])
